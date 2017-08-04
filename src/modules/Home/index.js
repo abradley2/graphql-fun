@@ -20,18 +20,18 @@ store.addReducer('home', function (prevState, action) {
 function homeView () {
   const state = store.getState()
 
-  return <div>
-    <input
-      value={state.home.message}
-      oninput={(e) => {
+  return m('div', [
+    m('input', {
+      value: state.home.message,
+      oninput: function (e) {
         store.dispatch({
           type: 'home:editMessage',
           message: e.target.value
         })
-      }}
-    />
-    <h3>{state.home.message}</h3>
-  </div>
+      }
+    }),
+    m('h3', state.home.message)
+  ])
 }
 
 module.exports = {view: homeView}
