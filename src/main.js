@@ -9,16 +9,18 @@ store.init()
 
 const appName = 'MithrilReduxBoilerplate'
 
-function startApp (err) {
-  if (err) window.console.error(err)
+function startApp(err) {
+	if (err) {
+		window.console.error(err)
+	}
 
-  m.route(document.getElementById('app'), '/', {
-    '/': home
-  })
+	m.route(document.getElementById('app'), '/', {
+		'/': home
+	})
 }
 
 if (process.env.NODE_ENV === 'development') {
-  require('./utils/persist')(appName, store, startApp)
+	require('./utils/persist')(appName, store, startApp)
 } else {
-  startApp()
+	startApp()
 }

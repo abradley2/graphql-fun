@@ -18,7 +18,13 @@
     ]
   },
   "babel": {
-    "presets": ["es2015"]
+    "presets": [
+      "es2015"
+    ]
+  },
+  "xo": {
+    "envs": ["node", "browser"],
+    "semicolon": false
   },
   "dependencies": {
     "icepick": "^1.3.0",
@@ -28,17 +34,16 @@
   },
   "devDependencies": {
     "babel-preset-es2015": "^6.24.1",
-    "babel-preset-react": "^6.24.1",
     "babelify": "^7.3.0",
     "browserify": "^14.1.0",
-    "budo": "^9.4.7",
+    "budo": "^10.0.4",
     "deep-equal": "^1.0.1",
     "envify": "^4.0.0",
     "localforage": "^1.5.0",
     "redux-logger": "^3.0.6",
     "sheetify": "^6.0.1",
-    "standard": "^9.0.0",
     "uglifyify": "^3.0.4",
-    "watchify": "^3.9.0"
+    "watchify": "^3.9.0",
+    "xo": "^0.18.2"
   }
 }
