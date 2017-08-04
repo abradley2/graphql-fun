@@ -1,7 +1,7 @@
 const m = require('mithril')
 const css = require('sheetify')
 const store = require('./store')
-const home = require('./modules/Home')
+const Home = require('./modules/Home')
 
 css('./main.css')
 
@@ -15,7 +15,7 @@ function startApp(err) {
 	}
 
 	m.route(document.getElementById('app'), '/', {
-		'/': home
+		'/': Home
 	})
 }
 
