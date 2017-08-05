@@ -10,3 +10,9 @@ I've been looking for a very nice pattern to keep a multi-client application in
 sync in an organized way. I didn't like directly piping redux actions and diff
 because that doesn't really give the client the ability to correct when things
 are wrong.
+
+What if your client goes alone but you still want them to make edits and
+then try to get the server caught up when it reconnects.
+
+Then when the client is disconnected we simply tell it to apply the
+mutations to itself, and it already has a mechanism for that anyway

@@ -17,6 +17,12 @@ function startApp(err) {
 	m.route(document.getElementById('app'), '/', {
 		'/': home
 	})
+
+	const ws = new WebSocket('ws://localhost:5000')
+
+	ws.onopen = function () {
+		window.console.log('socket open!')
+	}
 }
 
 if (process.env.NODE_ENV === 'development') {
