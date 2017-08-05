@@ -1,31 +1,12 @@
-# Mithril Redux
+The process of adding a Todo is sending a graphql request to the server, and the
+server persists it to Redis.
 
-A brilliant alternative to React + Redux
+To keep all the clients in sync, the server then pipes the graphql request back
+to via websocket to each client apart from the one that sent it initially.
 
-The bundle output by `npm run build` is < 14kb gzipped!
+The server resolvers add it to Redis, the client resolvers add it to Redux.
 
-# Dependencies Walkthrough
-
-**Mithril**  
-Smaller than React, extremely fast, and batteries included (routing and xhr!).
-
-**Redux**  
-Dead simple state management. Of course, Mithril's natural state management is
-still available if Redux is too much for the use case.
-
-**Icepick**  
-Nice and small bag of some functions that make it easy to treat object manipulations
-as if they were dealing with immutable data. This jumps over all the hurdles
-of constantly doing `Object.assign(..)` in your reducers.
-
-**Reselect**  
-A simple way to make performant selectors for your state tree..
-
-**Tachyons**  
-For rapid styling and prototyping of the interface.
-
-**Sheetify**  
-Simple library that allows you to inject imported css into the head. Much nicer
-than awkward Webpack loaders. Useful here for any css that isn't covered by
-Tachyons.
-
+I've been looking for a very nice pattern to keep a multi-client application in
+sync in an organized way. I didn't like directly piping redux actions and diff
+because that doesn't really give the client the ability to correct when things
+are wrong.

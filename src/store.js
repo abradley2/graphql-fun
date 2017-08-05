@@ -22,6 +22,7 @@ const store = {
 		const reduce = combineReducers(store.reducers)
 
 		let composeEnhancers = compose
+
 		if (process.env.NODE_ENV === 'development') {
 			const loggerSettings = {
 				diff: true,

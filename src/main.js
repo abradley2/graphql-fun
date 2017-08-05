@@ -1,7 +1,7 @@
 const m = require('mithril')
 const css = require('sheetify')
 const store = require('./store')
-const Home = require('./modules/Home')
+const home = require('./modules/home')
 
 css('./main.css')
 
@@ -15,11 +15,22 @@ function startApp(err) {
 	}
 
 	m.route(document.getElementById('app'), '/', {
-		'/': Home
+		'/': home
 	})
 }
 
 if (process.env.NODE_ENV === 'development') {
+	// Wrap request to hit local host
+	m.request = (function (mRequest) {
+		return function (opts) {
+			if (opts.url[0] === '/') {
+				opts.url = 'http://localhost:5000' + opts.url
+			}
+			return mRequest.call(m, opts)
+		}
+	})(m.request)
+
+	// Enable state persist then start app
 	require('./utils/persist')(appName, store, startApp)
 } else {
 	startApp()

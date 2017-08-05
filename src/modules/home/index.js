@@ -4,7 +4,7 @@ const {set} = require('icepick')
 const store = require('../../store')
 
 const initialState = {
-	message: 'test'
+	message: 'test again'
 }
 
 store.addReducer('home', (prevState, action) => {
