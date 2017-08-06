@@ -2,7 +2,7 @@ const m = require('mithril')
 const css = require('sheetify')
 const clientId = require('shortid').generate()
 const store = require('./store')
-const home = require('./modules/home')
+const home = require('./views/home')
 
 css('./main.css')
 

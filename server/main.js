@@ -3,6 +3,7 @@ const http = require('http')
 // Do you like pino coladaaaaas?
 // Getting caught in the rain??
 const log = require('pino')()
+const level = require('level')
 const app = require('express')()
 const pub = require('express').static
 const WebSocket = require('ws')
@@ -11,7 +12,7 @@ const api = require('./api')
 // In development just let budo serve up static assets
 if (process.env.NODE_ENV === 'production') {
 	app.use(
-		pub(path.join(__dirname, 'public'))
+		pub(path.join(__dirname, '../public'))
 	)
 }
 
@@ -19,7 +20,7 @@ if (process.env.NODE_ENV === 'production') {
 // to connected clients on success
 app.use((req, res, next) => {
 	// Send off mutation queries to all other clients
-	if (req.body.mutation) {
+	if (req.body && req.body.mutation) {
 		const {mutation, clientId} = req.body
 
 		res.on('end', () => {
@@ -44,6 +45,7 @@ const server = http.createServer((req, res) => {
 })
 
 app.locals.log = log
+app.locals.db = level('./db')
 app.locals.webSocketServer = new WebSocket.Server({server})
 
 server.listen(process.env.PORT, () => {
