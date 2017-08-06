@@ -1,4 +1,3 @@
-/** @jsx m */
 const m = require('mithril')
 const {set} = require('icepick')
 const store = require('../../store')
