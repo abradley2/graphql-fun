@@ -1,53 +1,70 @@
-const path = require('path')
 const http = require('http')
-// Do you like pino coladaaaaas?
-// Getting caught in the rain??
+const path = require('path')
+// Do you like pino coladaaaaas? Getting caught in the rain??
 const log = require('pino')()
+const app = require('merry')()
 const level = require('level')
-const app = require('express')()
-const pub = require('express').static
 const WebSocket = require('ws')
-const api = require('./api')
+const nodeStatic = require('node-static')
+const middleware = require('./middleware')
 
-// In development just let budo serve up static assets
-if (process.env.NODE_ENV === 'production') {
-	app.use(
-		pub(path.join(__dirname, '../public'))
-	)
-}
+const fileServer = new nodeStatic.Server(path.join(__dirname, '../public'))
+const locals = {}
 
-// Middleware to watch all requests for mutation queries and send them off
-// to connected clients on success
-app.use((req, res, next) => {
-	// Send off mutation queries to all other clients
-	if (req.body && req.body.mutation) {
-		const {mutation, clientId} = req.body
+// Declare graphql endpoints
+app.route('GET', '/gql', routeHandler(require('./queries')))
+app.route('PUT', '/gql', routeHandler(require('./mutations')))
+app.route('POST', '/gql', routeHandler(require('./subscriptions')))
 
-		res.on('end', () => {
-			// Check to make sure it was successful
-			if (res.status >= 200 && res.status < 300) {
-				const payload = JSON.stringify({mutation, origin: clientId})
-
-				// Here is where we'd want to add some security checks if we needed them
-				app.locals.webSocketServer.clients
-					.filter(client => client.readyState === WebSocket.OPEN)
-					.forEach(client => client.send(payload))
-			}
-		})
-	}
-	next()
+app.route('default', (req, res, ctx) => {
+	fileServer.serve(req, res, e => {
+		if (e) {
+			ctx.send(404, 'Cruisin down the streets in my 404')
+		}
+	})
 })
 
-app.use(api)
-
+// Initialize server
+const handler = app.start()
 const server = http.createServer((req, res) => {
-	app(req, res)
+	handler(req, res)
 })
 
-app.locals.log = log
-app.locals.db = level('./db')
-app.locals.webSocketServer = new WebSocket.Server({server})
+// Add WebSocket Server and DB handler to locals
+locals.db = level('./db')
+locals.webSocketServer = new WebSocket.Server({server})
 
+// Start server and listen on port
 server.listen(process.env.PORT, () => {
 	log.info({name: 'server/start'}, `Server listening on port ${process.env.PORT}`)
 })
+
+// Utilities
+function routeHandler(handlerFunc) {
+	return (req, res, ctx, done) => runSeries(
+		[
+			next => {
+				Object.assign(ctx, locals)
+				next()
+			},
+			next => middleware.setupSession(req, res, ctx, next)
+		],
+		err => {
+			if (err) {
+				ctx.log.error({name: 'middleware error '}, err)
+				done(err)
+			}
+			handlerFunc(req, res, ctx, done)
+		}
+	)
+}
+
+function runSeries(funcs, cb) {
+	(function run(idx) {
+		const err = funcs[idx]()
+		if (err || idx === funcs.length - 1) {
+			return cb(err)
+		}
+		return run(idx + 1)
+	})(0)
+}
