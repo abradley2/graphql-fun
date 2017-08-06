@@ -1,3 +1,4 @@
+const fs = require('fs')
 const http = require('http')
 const path = require('path')
 // Do you like pino coladaaaaas? Getting caught in the rain??
@@ -6,10 +7,17 @@ const app = require('merry')()
 const level = require('level')
 const WebSocket = require('ws')
 const nodeStatic = require('node-static')
+const {buildSchema, graphql} = require('graphql')
 const middleware = require('./middleware')
 
 const fileServer = new nodeStatic.Server(path.join(__dirname, '../public'))
-const locals = {}
+const schema = fs.readFileSync(path.join(__dirname, '../schema.graphql'), 'utf8')
+
+global.console.log(schema)
+const locals = {
+	schema: buildSchema(`${schema}`),
+	graphql
+}
 
 // Declare graphql endpoints
 app.route('GET', '/gql', routeHandler(require('./queries')))
