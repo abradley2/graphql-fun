@@ -16,6 +16,19 @@ store.addReducer('home', (prevState, action) => {
 	}
 })
 
+function oninit() {
+	m.request({
+		url: '/gql',
+		method: 'POST',
+		data: {request: `{
+			todos {
+				title
+				completed
+			}
+		}`}
+	})
+}
+
 function homeView() {
 	const state = store.getState()
 
@@ -33,4 +46,4 @@ function homeView() {
 	])
 }
 
-module.exports = {view: homeView}
+module.exports = {view: homeView, oninit}

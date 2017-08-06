@@ -1,3 +1,9 @@
-module.exports = function (req, res, ctx, done) {
-	done()
-}
+const queries = () => ({
+	todos() {
+		return Promise.resolve([
+			{title: 'Write code', completed: false}
+		])
+	}
+})
+
+module.exports = queries

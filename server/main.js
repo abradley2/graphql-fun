@@ -3,6 +3,7 @@ const http = require('http')
 const path = require('path')
 // Do you like pino coladaaaaas? Getting caught in the rain??
 const log = require('pino')()
+const corsify = require('corsify')
 const app = require('merry')()
 const level = require('level')
 const WebSocket = require('ws')
@@ -11,18 +12,26 @@ const {buildSchema, graphql} = require('graphql')
 const middleware = require('./middleware')
 
 const fileServer = new nodeStatic.Server(path.join(__dirname, '../public'))
-const schema = fs.readFileSync(path.join(__dirname, '../schema.graphql'), 'utf8')
 
-global.console.log(schema)
-const locals = {
-	schema: buildSchema(`${schema}`),
-	graphql
-}
+const schema = buildSchema(fs.readFileSync(path.join(__dirname, '../schema.graphql'), 'utf8'))
+const queries = require('./queries')
+const mutations = require('./mutations')
+const subscriptions = require('./subscriptions')
 
-// Declare graphql endpoints
-app.route('GET', '/gql', routeHandler(require('./queries')))
-app.route('PUT', '/gql', routeHandler(require('./mutations')))
-app.route('POST', '/gql', routeHandler(require('./subscriptions')))
+app.route('POST', '/gql', applyMiddleware((req, res, ctx) => {
+	const resolvers = Object.assign({},
+		queries(req, ctx),
+		mutations(req, ctx),
+		subscriptions(req, ctx)
+	)
+
+	graphql(schema, req.body.request, resolvers)
+		.then(response => ctx.send(200, response))
+		.catch(err => {
+			ctx.log.error({name: 'graphql error'}, err)
+			ctx.send(500, err)
+		})
+}))
 
 app.route('default', (req, res, ctx) => {
 	fileServer.serve(req, res, e => {
@@ -34,45 +43,43 @@ app.route('default', (req, res, ctx) => {
 
 // Initialize server
 const handler = app.start()
-const server = http.createServer((req, res) => {
-	handler(req, res)
-})
+const server = http.createServer(corsify((req, res) => handler(req, res)))
 
 // Add WebSocket Server and DB handler to locals
-locals.db = level('./db')
-locals.webSocketServer = new WebSocket.Server({server})
+const db = level('./db')
+const wss = new WebSocket.Server({server})
 
 // Start server and listen on port
 server.listen(process.env.PORT, () => {
 	log.info({name: 'server/start'}, `Server listening on port ${process.env.PORT}`)
 })
 
-// Utilities
-function routeHandler(handlerFunc) {
-	return (req, res, ctx, done) => runSeries(
+// Apply middleware
+function applyMiddleware(handlerFunc) {
+	return (req, res, ctx) => runSeries(
 		[
-			next => {
-				Object.assign(ctx, locals)
-				next()
-			},
+			next => next(null, Object.assign(ctx, {db, wss})),
+			next => middleware.readBody(req, res, ctx, next),
 			next => middleware.setupSession(req, res, ctx, next)
 		],
 		err => {
 			if (err) {
-				ctx.log.error({name: 'middleware error '}, err)
-				done(err)
+				ctx.log.error({name: 'middleware error'}, err)
+				ctx.send(500, err)
+				return
 			}
-			handlerFunc(req, res, ctx, done)
+			handlerFunc(req, res, ctx)
 		}
 	)
 }
 
 function runSeries(funcs, cb) {
 	(function run(idx) {
-		const err = funcs[idx]()
-		if (err || idx === funcs.length - 1) {
-			return cb(err)
-		}
-		return run(idx + 1)
+		funcs[idx](err => {
+			if (err || idx === funcs.length - 1) {
+				return cb(err)
+			}
+			return run(idx + 1)
+		})
 	})(0)
 }

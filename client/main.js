@@ -24,7 +24,6 @@ function startApp(err) {
 	const ws = new WebSocket('ws://' + serverUrl)
 
 	ws.onopen = function () {
-		window.console.log('socket open!')
 	}
 }
 
@@ -32,9 +31,9 @@ function startApp(err) {
 m.request = (function (mRequest) {
 	return function (opts) {
 		if (opts.url[0] === '/') {
-			opts.url = serverUrl + opts.url
+			opts.url = 'http://' + serverUrl + opts.url
 		}
-		if (opts.data && opts.data.mutation) {
+		if (opts.data) {
 			opts.data.clientId = clientId
 		}
 		return mRequest.call(m, opts)

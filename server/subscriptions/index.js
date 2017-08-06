@@ -1,3 +1,4 @@
-module.exports = function (req, res, ctx, done) {
-	done()
-}
+const subscriptions = (req, ctx) =>  ({
+})
+
+module.exports = subscriptions

@@ -10,7 +10,7 @@
     "test": "xo",
     "lint": "xo --fix",
     "dev:client": "NODE_ENV=development budo ./client/main.js:bundle.min.js --pushstate --live --dir ./public",
-    "dev:server": "NODE_ENV=development PORT=5000 nodemon --watch ./server ./server/main.js | pino-colada",
+    "dev:server": "NODE_ENV=development PORT=5000 nodemon --watch ./schema.graphql --watch ./server ./server/main.js | pino-colada",
     "start:dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "prod:client": "NODE_ENV=production browserify ./client/main.js -g uglifyify -o ./public/bundle.min.js",
     "prod:server": "NODE_ENV=production PORT=5000 node ./server/main.js",
@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "classnames": "^2.2.5",
+    "corsify": "^2.1.0",
     "graphql": "^0.10.5",
     "icepick": "^1.3.0",
     "level": "^1.7.0",

@@ -1,3 +1,5 @@
-module.exports = function (req, res, ctx, done) {
-	done()
-}
+const mutations = () => ({
+
+})
+
+module.exports = mutations
