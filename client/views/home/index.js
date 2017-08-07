@@ -18,7 +18,7 @@ store.addReducer('home', (prevState, action) => {
 
 function oninit() {
 	m.request({
-		url: '/gql',
+		url: '/graphql',
 		method: 'POST',
 		data: {request: `{
 			todos {

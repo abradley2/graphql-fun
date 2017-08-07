@@ -1,4 +1,5 @@
-const subscriptions = (req, ctx) =>  ({
-})
+const subscriptions = {
+
+}
 
 module.exports = subscriptions

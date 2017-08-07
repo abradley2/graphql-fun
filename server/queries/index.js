@@ -1,9 +1,16 @@
-const queries = () => ({
-	todos() {
-		return Promise.resolve([
-			{title: 'Write code', completed: false}
-		])
+const {GraphQLObjectType, GraphQLList} = require('graphql')
+
+module.exports = new GraphQLObjectType({
+	name: 'Query',
+	fields: {
+		todos: {
+			type: new GraphQLList(require('../models').Todo),
+			resolve: () => {
+				global.console.log('RESOLVER HITss')
+				return Promise.resolve([
+					{title: 'Write Code', completed: false}
+				])
+			}
+		}
 	}
 })
-
-module.exports = queries
