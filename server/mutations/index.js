@@ -55,6 +55,11 @@ module.exports = new GraphQLObjectType({
 		},
 		createTodo: {
 			type: require('../models').Todo,
+			args: {
+				title: {
+					type: GraphQLString
+				}
+			},
 			resolve: (obj, {title}, ctx) => {
 				const {resolve, reject, promise} = deferred()
 				const db = ctx.db
@@ -65,7 +70,7 @@ module.exports = new GraphQLObjectType({
 					completed: false
 				}
 
-				db.put(`todos!${newTodo.id}`, newTodo, err => {
+				db.put(`todos!${newTodo.id}`, JSON.stringify(newTodo), err => {
 					if (err) {
 						reject(err)
 					}

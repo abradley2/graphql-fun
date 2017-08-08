@@ -30,7 +30,7 @@ function oninit() {
 	m.request({
 		url: '/graphql',
 		method: 'POST',
-		data: {request: `{
+		data: {request: `query {
 			todos {
 				id
 				title
@@ -53,14 +53,18 @@ function createTodo(title) {
 	m.request({
 		url: '/graphql',
 		method: 'POST',
-		data: {request: `{
-			createTodo(title: "${title}")
+		data: {request: `mutation {
+			createTodo(title: "${title}") {
+				id
+				title
+				completed
+			}
 		}`}
 	})
 		.then(res => {
 			store.dispatch({
 				type: 'home:createTodo:success',
-				newTodo: res.data.todo
+				newTodo: res.data.createTodo
 			})
 		})
 }
@@ -84,7 +88,12 @@ function homeView() {
 			onclick() {
 				createTodo(state.home.newTodoTitle)
 			}
-		})
+		}),
+		m('div', [
+			m('ul', state.home.todos.map(todo => {
+				return m('li', todo.title)
+			}))
+		])
 	])
 }
 

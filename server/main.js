@@ -14,6 +14,7 @@ const middleware = require('./middleware')
 const fileServer = new nodeStatic.Server(path.join(__dirname, '../public'))
 
 const schema = new GraphQLSchema({
+	mutation: require('./mutations'),
 	query: require('./queries')
 })
 
