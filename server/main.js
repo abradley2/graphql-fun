@@ -2,6 +2,7 @@ const http = require('http')
 const path = require('path')
 // Do you like pino coladaaaaas? Getting caught in the rain??
 const log = require('pino')()
+const series = require('run-series')
 const corsify = require('corsify')
 const app = require('merry')()
 const level = require('level')
@@ -17,9 +18,7 @@ const schema = new GraphQLSchema({
 })
 
 app.route('POST', '/graphql', applyMiddleware((req, res, ctx) => {
-	const request = '{ hello }'
-
-	graphql(schema, request, '', ctx)
+	graphql(schema, req.body.request, '', ctx)
 		.then(response => ctx.send(200, response))
 		.catch(err => {
 			ctx.log.error({name: 'graphql error'}, err)
@@ -50,7 +49,7 @@ server.listen(process.env.PORT, () => {
 
 // Apply middleware
 function applyMiddleware(handlerFunc) {
-	return (req, res, ctx) => runSeries(
+	return (req, res, ctx) => series(
 		[
 			next => next(null, Object.assign(ctx, {db, wss})),
 			next => middleware.readBody(req, res, ctx, next),
@@ -65,15 +64,4 @@ function applyMiddleware(handlerFunc) {
 			handlerFunc(req, res, ctx)
 		}
 	)
-}
-
-function runSeries(funcs, cb) {
-	(function run(idx) {
-		funcs[idx](err => {
-			if (err || idx === funcs.length - 1) {
-				return cb(err)
-			}
-			return run(idx + 1)
-		})
-	})(0)
 }

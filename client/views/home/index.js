@@ -1,18 +1,28 @@
 const m = require('mithril')
-const {set} = require('icepick')
+const {set, push} = require('icepick')
 const store = require('../../store')
 
 const initialState = {
-	message: 'test again'
+	newTodoTitle: 'New Todo',
+	todos: []
 }
 
-store.addReducer('home', (prevState, action) => {
+store.addReducer('home', (state, action) => {
 	switch (action.type) {
-		case 'home:editMessage':
-			return set(prevState, 'message', action.message)
+		case 'home:getTodos:success':
+			return set(state, 'todos', action.todos)
+
+		case 'home:editNewTodoTitle':
+			return set(state, 'newTodoTitle', action.title)
+
+		case 'home:createTodo:start':
+			return set(state, 'newTodoTitle', 'New Todo')
+
+		case 'home:createTodo:success':
+			return set(state, 'todos', push(state.todos, action.newTodo))
 
 		default:
-			return prevState || initialState
+			return state || initialState
 	}
 })
 
@@ -22,11 +32,37 @@ function oninit() {
 		method: 'POST',
 		data: {request: `{
 			todos {
+				id
 				title
 				completed
 			}
 		}`}
 	})
+		.then(res => {
+			store.dispatch({
+				type: 'home:getTodos:success',
+				todos: res.data.todos
+			})
+		})
+}
+
+function createTodo(title) {
+	store.dispatch({
+		type: 'home:createTodo:start'
+	})
+	m.request({
+		url: '/graphql',
+		method: 'POST',
+		data: {request: `{
+			createTodo(title: "${title}")
+		}`}
+	})
+		.then(res => {
+			store.dispatch({
+				type: 'home:createTodo:success',
+				newTodo: res.data.todo
+			})
+		})
 }
 
 function homeView() {
@@ -34,15 +70,21 @@ function homeView() {
 
 	return m('div', [
 		m('input', {
-			value: state.home.message,
+			value: state.home.newTodoTitle,
 			oninput(e) {
 				store.dispatch({
-					type: 'home:editMessage',
-					message: e.target.value
+					type: 'home:editNewTodoTitle',
+					title: e.target.value
 				})
 			}
 		}),
-		m('h3', state.home.message)
+		m('h3', state.home.newTodoTitle),
+		m('button', {
+			innerText: 'Create Todo',
+			onclick() {
+				createTodo(state.home.newTodoTitle)
+			}
+		})
 	])
 }
 
