@@ -1,4 +1,5 @@
 const http = require('http')
+const fs = require('fs')
 const path = require('path')
 // Do you like pino coladaaaaas? Getting caught in the rain??
 const log = require('pino')()
@@ -8,18 +9,21 @@ const app = require('merry')()
 const level = require('level')
 const WebSocket = require('ws')
 const nodeStatic = require('node-static')
-const {graphql, GraphQLSchema} = require('graphql')
+const {graphql} = require('graphql')
+const {makeExecutableSchema} = require('graphql-tools')
 const middleware = require('./middleware')
 
 const fileServer = new nodeStatic.Server(path.join(__dirname, '../public'))
 
-const schema = new GraphQLSchema({
-	mutation: require('./mutations'),
-	query: require('./queries')
+const schema = makeExecutableSchema({
+	typeDefs: fs.readFileSync(path.join(__dirname, '../schema.graphql'), 'utf8'),
+	resolvers: Object.assign(
+		require('./queries')
+	)
 })
 
 app.route('POST', '/graphql', applyMiddleware((req, res, ctx) => {
-	graphql(schema, req.body.request, '', ctx)
+	graphql(schema, 'query { todos {title, subtasks} }', '', ctx)
 		.then(response => ctx.send(200, response))
 		.catch(err => {
 			ctx.log.error({name: 'graphql error'}, err)
