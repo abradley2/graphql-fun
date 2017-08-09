@@ -1,5 +1,5 @@
-const uuid = require('uuid/v4')
-const {GraphQLObjectType, GraphQLString, GraphQLBoolean} = require('graphql')
+const shortid = require('shortid')
+const {GraphQLNonNull, GraphQLObjectType, GraphQLString, GraphQLBoolean} = require('graphql')
 const series = require('run-series')
 const {deferred} = require('../utils')
 
@@ -8,6 +8,14 @@ module.exports = new GraphQLObjectType({
 	fields: {
 		toggleTodoCompleted: {
 			type: GraphQLBoolean,
+			args: {
+				id: {
+					type: new GraphQLNonNull(GraphQLString)
+				},
+				completed: {
+					type: new GraphQLNonNull(GraphQLBoolean)
+				}
+			},
 			resolve: (obj, {id, completed}, ctx) => {
 				const {resolve, reject, promise} = deferred()
 				const db = ctx.db
@@ -39,6 +47,11 @@ module.exports = new GraphQLObjectType({
 		},
 		deleteTodo: {
 			type: GraphQLString,
+			args: {
+				id: {
+					type: GraphQLString
+				}
+			},
 			resolve: (obj, {id}, ctx) => {
 				const {resolve, reject, promise} = deferred()
 				const db = ctx.db
@@ -65,7 +78,7 @@ module.exports = new GraphQLObjectType({
 				const db = ctx.db
 
 				const newTodo = {
-					id: uuid(),
+					id: Date.now() + shortid.generate(),
 					title,
 					completed: false
 				}
