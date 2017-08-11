@@ -18,12 +18,13 @@ const fileServer = new nodeStatic.Server(path.join(__dirname, '../public'))
 const schema = makeExecutableSchema({
 	typeDefs: fs.readFileSync(path.join(__dirname, '../schema.graphql'), 'utf8'),
 	resolvers: Object.assign(
-		require('./queries')
+		require('./queries'),
+		require('./mutations')
 	)
 })
 
 app.route('POST', '/graphql', applyMiddleware((req, res, ctx) => {
-	graphql(schema, 'query { todos {title, subtasks} }', '', ctx)
+	graphql(schema, req.body.request, '', ctx)
 		.then(response => ctx.send(200, response))
 		.catch(err => {
 			ctx.log.error({name: 'graphql error'}, err)
