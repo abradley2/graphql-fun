@@ -48,6 +48,7 @@
     "mithril": "^1.0.1",
     "node-static": "^0.7.9",
     "pino": "^4.7.1",
+    "redis": "^2.8.0",
     "redux": "^3.6.0",
     "reselect": "^2.5.4",
     "run-series": "^1.1.4",
