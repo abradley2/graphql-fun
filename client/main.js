@@ -3,6 +3,7 @@ const css = require('sheetify')
 const clientId = require('shortid').generate()
 const store = require('./store')
 const home = require('./views/home')
+const login = require('./views/login')
 
 css('./main.css')
 
@@ -18,7 +19,8 @@ function startApp(err) {
 	}
 
 	m.route(document.getElementById('app'), '/', {
-		'/': home
+		'/': home,
+		'/login': login
 	})
 
 	const ws = new WebSocket('ws://' + serverUrl)
